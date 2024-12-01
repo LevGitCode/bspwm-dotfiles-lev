@@ -7,29 +7,17 @@
 ```bash
 iwctl
 device list
-station устройство scan
-station устройство get-networks
-station устройство connect SSID
-ping google.com
-```
-
-### Установка крупного шрифта (необязательно)
-```bash
-pacman -S terminus-font
-cd /usr/share/kbd/consolefonts
-setfont ter-u32b.psf.gz
+device wlan0 set-property Powered on
+adapter phy0 set-property Powered on
+station wlan0 get-networks
+station wlan0 connect SSID
+ping ya.ru
 ```
 
 ### Разметка диска под UEFI GPT с шифрованием
-Если вы используете SSD, тогда ваши разделы будут выглядеть примерно так:
-- `/dev/nvme0n1p1`
-- `/dev/nvme0n1p2`
-
-В таком случае замените `/dev/sda` на `/dev/nvme0n1`.
-А разделы `/dev/sda1` и `/dev/sda2` на `/dev/nvme0n1p1` и `/dev/nvme0n1p2`.
 
 ```bash
-parted /dev/sda
+parted /dev/nvme0n1
 mklabel gpt
 mkpart ESP fat32 1Mib 512Mib
 set 1 boot on
@@ -42,51 +30,26 @@ mkpart primary
 quit
 ```
 
-### Шифруем раздел который подготавливался ранее
-```bash
-cryptsetup luksFormat /dev/sda2
-# sda2 – раздел с шифрованием
-# вводим YES большими буквами
-# вводим пароль 2 раза
-
-# Открываем зашифрованный раздел
-cryptsetup open /dev/sda2 luks
-
-# Проверяем разделы
-ls /dev/mapper/*
-
-# Создаем логические разделы внутри зашифрованного раздела
-pvcreate /dev/mapper/luks
-vgcreate main /dev/mapper/luks
-
-# 100% зашифрованного раздела помещаем в логический раздел root
-lvcreate -l 100%FREE main -n root
-
-# Посмотреть все логические разделы
-lvs
-```
-
 ### Подготовка разделов и монтирование
 ```bash
 # Форматируем раздел под ext4
 mkfs.ext4 /dev/mapper/main-root
 
-# Форматируем boot раздел под Fat32, на физ.разделе /dev/sda1 лежит boot
-mkfs.fat -F 32 /dev/sda1
+# Форматируем boot раздел под Fat32, на физ.разделе /dev/nvme0n1p1 лежит boot
+mkfs.fat -F 32 /dev/nvme0n1p1
 
 # Монтируем разделы для установки системы
 mount /dev/mapper/main-root /mnt
 mkdir /mnt/boot
 
 # Монтируем раздел с boot в текущую рабочую папку
-mount /dev/sda1 /mnt/boot
+mount /dev/nvme0n1p1 /mnt/boot
 ```
 
 ### Сборка ядра и базовых софтов
 ```bash
 # Устанавливаем базовые софты
-pacstrap -K /mnt base linux linux-firmware base-devel lvm2
-dhcpcd net-tools iproute2 networkmanager vim micro efibootmgr iwd
+pacstrap -K /mnt base linux linux-firmware base-devel lvm2 dhcpcd net-tools iproute2 networkmanager vim micro efibootmgr iwd
 
 # Генерируем fstab
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -106,14 +69,14 @@ ln -sf /usr/share/zoneinfo/Europe/Kiev /etc/localtime
 hwclock --systohc
 
 # Указать имя хоста
-echo “arch” > /etc/hostname
+echo “justkeel” > /etc/hostname
 
 # Укажите пароль для root пользователя
 passwd
 
 # Добавляем нового пользователя и настраиваем права
-useradd -m -G wheel,users,video -s /bin/bash user
-passwd user
+useradd -m -G wheel,users,video -s /bin/bash justkeel
+passwd justkeel
 systemctl enable dhcpcd
 systemctl enable iwd.service
 
@@ -145,10 +108,10 @@ micro arch.conf
 
 # Вставляем в arch.conf следующее:
 # UUID можно узнать командой blkid
-title Arch Linux by ZProger
+title Arch Linux JustKeel
 linux /vmlinuz-linux
 initrd /initramfs-linux.img
-options rw cryptdevice=UUID=uuid_от_/dev/sda2:main root=/dev/mapper/main-root
+options rw cryptdevice=UUID=uuid_от_/dev/nvme0n1p2:main root=/dev/mapper/main-root
 
 # Выдаем права на sudo
 sudo EDITOR=micro visudo
@@ -184,7 +147,7 @@ exec bspwm
 
 и выполните сборку оболочки используя данные команды:
 ```bash
-git clone https://github.com/Zproger/bspwm-dotfiles.git
+git clone https://github.com/TheKilloboy/bspwm-dotfiles-justkeeel.git
 cd bspwm-dotfiles
 python3 Builder/install.py
 ```
