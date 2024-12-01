@@ -1,25 +1,46 @@
 #!/usr/bin/env bash
 
 # Graphics card
-CARD=$(basename "$(find /sys/class/backlight/* | head -n 1)")
+#CARD=$(basename "$(find /sys/class/backlight/* | head -n 1)")
 
 
 # Increase brightness
+#inc_backlight() {
+#	if [[ "$CARD" == *"intel_"* ]]; then
+#		xbacklight -inc 5
+#	else
+#		light -A 5
+#	fi
+#}
+
+# Decrease brightness
+#dec_backlight() {
+#	if [[ "$CARD" == *"intel_"* ]]; then
+#		xbacklight -dec 5
+#	else
+#		light -U 5
+#	fi
+#}
+
+# Execute accordingly
+#if [[ "$1" == "--get" ]]; then
+#	get_backlight
+#elif [[ "$1" == "--up" ]]; then
+#	inc_backlight
+#elif [[ "$1" == "--down" ]]; then
+#	dec_backlight
+#else
+#	get_backlight
+#fi
+
+# Increase brightness
 inc_backlight() {
-	if [[ "$CARD" == *"intel_"* ]]; then
-		xbacklight -inc 5
-	else
-		light -A 5
-	fi
+		brightnessctl set 5-
 }
 
 # Decrease brightness
 dec_backlight() {
-	if [[ "$CARD" == *"intel_"* ]]; then
-		xbacklight -dec 5
-	else
-		light -U 5
-	fi
+		brightnessctl set 5+
 }
 
 # Execute accordingly
@@ -32,3 +53,4 @@ elif [[ "$1" == "--down" ]]; then
 else
 	get_backlight
 fi
+
