@@ -147,7 +147,7 @@ exec bspwm
 
 и выполните сборку оболочки используя данные команды:
 ```bash
-git clone https://github.com/TheKilloboy/bspwm-dotfiles-justkeeel.git
+git clone https://github.com/LevGitCode/bspwm-dotfiles-lev.git
 cd bspwm-dotfiles
 python3 Builder/install.py
 ```
