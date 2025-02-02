@@ -1,56 +1,42 @@
 #!/usr/bin/env bash
 
-# Graphics card
-#CARD=$(basename "$(find /sys/class/backlight/* | head -n 1)")
-
-
-# Increase brightness
-#inc_backlight() {
-#	if [[ "$CARD" == *"intel_"* ]]; then
-#		xbacklight -inc 5
-#	else
-#		light -A 5
-#	fi
-#}
-
-# Decrease brightness
-#dec_backlight() {
-#	if [[ "$CARD" == *"intel_"* ]]; then
-#		xbacklight -dec 5
-#	else
-#		light -U 5
-#	fi
-#}
-
-# Execute accordingly
-#if [[ "$1" == "--get" ]]; then
-#	get_backlight
-#elif [[ "$1" == "--up" ]]; then
-#	inc_backlight
-#elif [[ "$1" == "--down" ]]; then
-#	dec_backlight
-#else
-#	get_backlight
-#fi
-
-# Increase brightness
-inc_backlight() {
-		brightnessctl set 5-
+# Функция для получения текущей яркости
+get_brightness() {
+    brightnessctl get
 }
 
-# Decrease brightness
-dec_backlight() {
-		brightnessctl set 5+
+# Функция для увеличения яркости
+inc_brightness() {
+    brightnessctl set +5%
+    notify_brightness
 }
 
-# Execute accordingly
-if [[ "$1" == "--get" ]]; then
-	get_backlight
-elif [[ "$1" == "--up" ]]; then
-	inc_backlight
-elif [[ "$1" == "--down" ]]; then
-	dec_backlight
-else
-	get_backlight
-fi
+# Функция для уменьшения яркости
+dec_brightness() {
+    brightnessctl set 5%-
+    notify_brightness
+}
 
+# Функция для отображения уведомления о текущей яркости
+notify_brightness() {
+    current_brightness=$(brightnessctl get)
+    max_brightness=$(brightnessctl max)
+    brightness_percent=$((100 * current_brightness / max_brightness))
+    notify-send "Яркость экрана" "Текущая яркость: ${brightness_percent}%" -t 700
+}
+
+# Обработка аргументов командной строки
+case "$1" in
+    --get)
+        get_brightness
+        ;;
+    --up)
+        inc_brightness
+        ;;
+    --down)
+        dec_brightness
+        ;;
+    *)
+        echo "Использование: $0 [--get|--up|--down]"
+        ;;
+esac
